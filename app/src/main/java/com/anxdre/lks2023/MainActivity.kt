@@ -2,14 +2,18 @@ package com.anxdre.lks2023
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.anxdre.lks2023.api.ApiFactory
 import com.anxdre.lks2023.databinding.ActivityMainBinding
 import com.anxdre.lks2023.model.Product
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.json.JSONTokener
 
@@ -20,26 +24,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val apiTask = CoroutineScope(Dispatchers.IO).async {
+        CoroutineScope(Dispatchers.IO).async {
             val result = ApiFactory.fetchData("https://dummyjson.com/products")
             val json = JSONObject(JSONTokener(result))
 
             if (json.getInt("total") != 0) {
-                val listOfProducts = arrayListOf<Product>()
                 val jsonData = json.getJSONArray("products")
+                val listOfProducts = arrayListOf<Product>()
 
                 for (i in 0..20) {
                     val data = jsonData.getJSONObject(i)
-
+                    
                     val product = Product(
                         data.getInt("id"),
                         data.getString("brand"),
                         data.getString("category"),
                         data.getString("description"),
                         data.getDouble("discountPercentage"),
-                        arrayListOf("test","test"),
+                        listOf<String>(data.getJSONArray("images").getString(0)),
                         data.getInt("price"),
                         data.getDouble("rating"),
                         data.getInt("stock"),
@@ -48,7 +53,11 @@ class MainActivity : AppCompatActivity() {
                     )
                     listOfProducts.add(product)
                 }
-                Log.d("List of products", listOfProducts.toString())
+
+                withContext(Dispatchers.Main) {
+                    print(listOfProducts.size)
+                    binding.rvMain.adapter = MainAdapter(listOfProducts)
+                }
             }
         }
     }
