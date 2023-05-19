@@ -1,18 +1,11 @@
 package com.anxdre.lks2023.model
 
-data class Products(
-    val limit: Int,
-    val products: List<Product>,
-    val skip: Int,
-    val total: Int
-)
-
 data class Product(
+    val id: Int,
     val brand: String,
     val category: String,
     val description: String,
     val discountPercentage: Double,
-    val id: Int,
     val images: List<String>,
     val price: Int,
     val rating: Double,
